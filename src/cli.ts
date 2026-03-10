@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { styleText } from 'node:util';
+import migrate from '@oxlint/migrate';
 import { Command } from 'commander';
 import { parse } from 'jsonc-parser';
 import { diff, type EslintFlatConfig, type OxlintConfig } from './utils/diff';
@@ -16,12 +17,6 @@ const ESLINT_CONFIG_FILES = [
   'eslint.config.ts',
   'eslint.config.mts',
   'eslint.config.cts',
-];
-const OXLINT_CONFIG_FILES = [
-  '.oxlintrc.json',
-  '.oxlintrc.jsonc',
-  'oxlintrc.json',
-  'oxlintrc.jsonc',
 ];
 
 /**
@@ -69,16 +64,31 @@ async function loadEslintConfig(p?: string): Promise<EslintFlatConfig[]> {
 /**
  * Loads an OxLint config from a JSON / JSONC file.
  *
- * @param p - The file path to the OxLint config to load.
+ * @param configPath - The file path to the OxLint config to load.
  * @returns The resolved OxLint config object.
  */
-async function loadOxlintConfig(p?: string): Promise<OxlintConfig> {
-  const configPath = p ?? (await findConfigFile(OXLINT_CONFIG_FILES));
-  if (!configPath) {
-    throw new Error('Error: No OxLint config file found.');
-  }
+async function loadOxlintConfig(configPath: string): Promise<OxlintConfig> {
   const content = await fs.readFile(path.resolve(configPath), 'utf8');
   return parse(content) as OxlintConfig;
+}
+
+/**
+ * Infers an OxLint config from the loaded ESLint flat config using @oxlint/migrate.
+ *
+ * @param eslintConfig - The loaded ESLint flat config objects.
+ * @param options - Options to pass to the migration tool.
+ * @returns The inferred OxLint config object.
+ */
+async function inferOxlintConfig(
+  eslintConfig: EslintFlatConfig[],
+  options: { typeAware: boolean; jsPlugins: boolean; withNursery: boolean }
+): Promise<OxlintConfig> {
+  const result = await migrate(eslintConfig, undefined, {
+    typeAware: options.typeAware,
+    jsPlugins: options.jsPlugins,
+    withNursery: options.withNursery,
+  });
+  return result as OxlintConfig;
 }
 
 /**
@@ -118,7 +128,22 @@ await createBaseProgram()
   )
   .option(
     '--oxlint-config <path>',
-    'Path to the oxlint configuration file. Defaults to .oxlintrc file in the current directory.'
+    'Path to the oxlint configuration file. If omitted, infers the config from the ESLint configuration.'
+  )
+  .option(
+    '--with-infer-type-aware',
+    'Include type-aware rules when inferring the oxlint config. Only relevant without --oxlint-config.',
+    true
+  )
+  .option(
+    '--with-infer-js-plugins',
+    'Include ESLint JS plugins when inferring the oxlint config. Only relevant without --oxlint-config.',
+    false
+  )
+  .option(
+    '--with-infer-nursery',
+    'Include nursery rules when inferring the oxlint config. Only relevant without --oxlint-config.',
+    false
   )
   .addHelpText(
     'after',
@@ -134,12 +159,24 @@ ${styleText('green', '--oxlint-config')} ${styleText('yellow', 'path/to/.oxlintr
     async ({
       eslintConfig,
       oxlintConfig,
+      withInferTypeAware,
+      withInferJsPlugins,
+      withInferNursery,
     }: {
       eslintConfig?: string;
       oxlintConfig?: string;
+      withInferTypeAware: boolean;
+      withInferJsPlugins: boolean;
+      withInferNursery: boolean;
     }) => {
       const loadedEslintConfig = await loadEslintConfig(eslintConfig);
-      const loadedOxlintConfig = await loadOxlintConfig(oxlintConfig);
+      const loadedOxlintConfig = oxlintConfig
+        ? await loadOxlintConfig(oxlintConfig)
+        : await inferOxlintConfig(loadedEslintConfig, {
+            typeAware: withInferTypeAware,
+            jsPlugins: withInferJsPlugins,
+            withNursery: withInferNursery,
+          });
       const result = diff(loadedEslintConfig, loadedOxlintConfig);
       printDiffResult(result);
     }
