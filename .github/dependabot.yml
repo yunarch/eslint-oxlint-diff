@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: bun
+    directory: '/'
+    versioning-strategy: increase
+    cooldown:
+      default-days: 3
+    schedule:
+      interval: weekly
+      day: sunday
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: sunday

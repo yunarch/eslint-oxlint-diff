@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  CI: true
+  DO_NOT_TRACK: 1
+  HUSKY: 0
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Code linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📁 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@ecf28ddc73e819eb6fa29df6b34ef8921c743461
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+      - name: 🔍 Lint files
+        run: bun run lint
+  unit_test:
+    name: Unit testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📁 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@ecf28ddc73e819eb6fa29df6b34ef8921c743461
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+      - name: 🧪 Test files
+        run: bun run tests
+  build_test:
+    name: Build testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📁 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@ecf28ddc73e819eb6fa29df6b34ef8921c743461
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+      - name: 🧪 Test Build
+        run: bun run build

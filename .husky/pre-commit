@@ -1,0 +1,10 @@
+. "$(dirname -- "$0")/common.sh"
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR)
+
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+
+bun run lint:code $STAGED_FILES
+bun run format:all $STAGED_FILES

@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      move_tag:
+        description: 'Move tag to latest commit if behind'
+        type: boolean
+        required: false
+        default: false
+
+env:
+  CI: true
+  DO_NOT_TRACK: 1
+  HUSKY: 0
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📁 Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - name: ⚙️ Setup Node 24 (Temporary solution until Bun publish supports OIDC)
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@ecf28ddc73e819eb6fa29df6b34ef8921c743461
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+      - name: 🔍 Lint files
+        run: bun run lint
+      - name: 🔨 Build files
+        run: bun run build
+      - name: 🧪 Test distribution
+        run: bun run tests
+        env:
+          TEST_DIST: true
+      - name: 🚀 Publish
+        run: npm publish
+      - name: 🔖 Move tag to latest commit
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.move_tag == 'true'
+        run: |
+          git config user.name "{{ github.actor }}"
+          git config user.email "{{ github.actor }}@users.noreply.github.com"
+          VERSION=$(node -p "require('./package.json').version")
+          TAG_NAME="v$VERSION"
+          HEAD_COMMIT=$(git rev-parse HEAD)
+
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            TAG_COMMIT=$(git rev-parse "$TAG_NAME")
+            if git merge-base --is-ancestor "$TAG_COMMIT" "$HEAD_COMMIT" && [ "$TAG_COMMIT" != "$HEAD_COMMIT" ]; then
+              echo "Tag $TAG_NAME is behind HEAD. Moving from $TAG_COMMIT to $HEAD_COMMIT"
+              git tag -d "$TAG_NAME"
+              git tag "$TAG_NAME" "$HEAD_COMMIT"
+              git push origin "$TAG_NAME" --force
+            fi
+          fi
+      - name: 📝 Generate release notes
+        run: bunx changelogithub
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
