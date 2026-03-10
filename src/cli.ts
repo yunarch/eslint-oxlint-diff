@@ -120,6 +120,11 @@ await createBaseProgram()
     '--oxlint-config <path>',
     'Path to the oxlint configuration file. Defaults to .oxlintrc file in the current directory.'
   )
+  .option(
+    '--use-eslint-plugin-oxlint',
+    'Use eslint-plugin-oxlint to turn off ESLint rules already covered by OxLint. Unnecessary if you already use the plugin in your ESLint config.',
+    true
+  )
   .addHelpText(
     'after',
     `
@@ -134,15 +139,16 @@ ${styleText('green', '--oxlint-config')} ${styleText('yellow', 'path/to/.oxlintr
     async ({
       eslintConfig,
       oxlintConfig,
+      useEslintPluginOxlint,
     }: {
       eslintConfig?: string;
       oxlintConfig?: string;
+      useEslintPluginOxlint?: boolean;
     }) => {
       const loadedEslintConfig = await loadEslintConfig(eslintConfig);
       const loadedOxlintConfig = await loadOxlintConfig(oxlintConfig);
-      const result = diff({
-        eslintConfig: loadedEslintConfig,
-        oxlintConfig: loadedOxlintConfig,
+      const result = diff(loadedEslintConfig, loadedOxlintConfig, {
+        useEslintPluginOxlint,
       });
       printDiffResult(result);
     }
