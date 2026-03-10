@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package",
   "name": "@yunarch/eslint-oxlint-diff",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "CLI tool to compare ESLint and OxLint rules, showing coverage gaps and overlap.",
   "license": "MIT",
   "keywords": [
