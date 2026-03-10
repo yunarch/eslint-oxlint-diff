@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "@yunarch/eslint-oxlint-diff",
+  "version": "0.0.1",
+  "description": "CLI tool to compare ESLint and OxLint rules, showing coverage gaps and overlap.",
+  "license": "MIT",
+  "keywords": [
+    "eslint",
+    "oxlint",
+    "diff"
+  ],
+  "author": {
+    "name": "Adrian Lopez Gonzalez",
+    "url": "https://github.com/yunarch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yunarch/eslint-oxlint-diff.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yunarch/eslint-oxlint-diff/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "README.md",
+    "LICENSE.md",
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "eod": "dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepare": "husky && bun run gen",
+    "gen": "bun run ./scripts/docsgen.ts",
+    "lint": "bun run --parallel lint:code lint:ts",
+    "lint:code": "oxlint --type-aware",
+    "lint:ts": "tsc --noEmit",
+    "format": "oxfmt format --check ./",
+    "format:all": "oxfmt format --write ./",
+    "clean": "rimraf dist",
+    "build": "bun build ./src/index.ts --outdir ./dist --minify --target node --format esm --external commander",
+    "tests": "bun test",
+    "tests:watch": "bun test --watch",
+    "tests:dist": "bun run build && TEST_DIST=true bun test",
+    "release": "bun run lint && bun run tests:dist && HUSKY=0 bunx bumpp"
+  },
+  "dependencies": {
+    "commander": "14.0.3"
+  },
+  "devDependencies": {
+    "oxfmt": "0.37.0",
+    "oxlint": "1.52.0",
+    "oxlint-tsgolint": "0.16.0",
+    "husky": "9.1.7",
+    "rimraf": "6.1.3",
+    "typescript": "5.9.3",
+    "@types/node": "25.4.0"
+  },
+  "packageManager": "bun@1.3.10"
+}
