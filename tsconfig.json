@@ -3,30 +3,17 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "Preserve",
-    "composite": false,
-    "skipLibCheck": true,
-
-    /* Bundler */
     "moduleResolution": "Bundler",
-    "isolatedModules": true,
-    "inlineSources": false,
+    "skipLibCheck": true,
     "esModuleInterop": true,
-    "declarationMap": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true,
 
     /* Linting */
     "strict": true,
     "strictNullChecks": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "forceConsistentCasingInFileNames": true,
-
-    /* Types */
-    "declaration": true,
-
-    /* Others */
-    "preserveWatchOutput": true
+    "forceConsistentCasingInFileNames": true
   },
   "exclude": ["node_modules"]
 }
