@@ -1,7 +1,19 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
-  "plugins": ["eslint", "import", "jsdoc", "unicorn", "typescript", "oxc"],
-  "categories": { "correctness": "error", "perf": "error" },
+  "plugins": [
+    "eslint",
+    "import",
+    "jsdoc",
+    "unicorn",
+    "promise",
+    "typescript",
+    "vitest",
+    "oxc"
+  ],
+  "categories": {
+    "correctness": "error",
+    "perf": "error"
+  },
   "options": {
     "typeAware": true,
     "typeCheck": true
