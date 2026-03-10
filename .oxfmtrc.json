@@ -20,6 +20,7 @@
   "htmlWhitespaceSensitivity": "css",
   "embeddedLanguageFormatting": "auto",
   "sortPackageJson": false,
+  "ignorePatterns": [],
   "sortImports": {
     "groups": [
       "builtin",
@@ -31,6 +32,5 @@
     ],
     "newlinesBetween": false,
     "order": "asc"
-  },
-  "ignorePatterns": []
+  }
 }
