@@ -3,6 +3,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 
+if (process.env.CI) process.exit(0);
+
 const ROOT_DIR = resolve(import.meta.dirname, '..');
 const README_PATH = resolve(ROOT_DIR, 'README.md');
 

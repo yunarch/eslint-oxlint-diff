@@ -42,7 +42,9 @@
   },
   "scripts": {
     "prepare": "husky && bun run gen",
-    "gen": "bun run ./scripts/docsgen.ts",
+    "gen": "bun run --parallel gen:docs gen:oxlint",
+    "gen:docs": "bun run ./scripts/docsgen.ts",
+    "gen:oxlint": "bun run ./scripts/oxlintgen.ts && oxfmt format --write ./.oxlintrc.json",
     "lint": "bun run --parallel lint:code lint:ts",
     "lint:code": "oxlint --type-aware",
     "lint:ts": "tsc --noEmit",
