@@ -7,6 +7,7 @@ describe('CLI', () => {
     expect(stdout).toContain('Usage: @yunarch/eslint-oxlint-diff');
     expect(stdout).toContain('--eslint-config');
     expect(stdout).toContain('--oxlint-config');
+    expect(stdout).toContain('--no-dedupe');
     expect(stdout).toContain('Example usage:');
   });
 });
