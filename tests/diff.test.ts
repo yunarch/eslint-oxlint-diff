@@ -70,10 +70,9 @@ describe('diff', () => {
     });
 
     it('should handle configs without rules', () => {
-      const result = diff(
-        [{ plugins: {} }, { rules: { 'no-console': 'error' } }],
-        { rules: {} }
-      );
+      const result = diff([{ rules: { 'no-console': 'error' } }], {
+        rules: {},
+      });
       expect(result.eslintRules.size).toBe(1);
     });
 

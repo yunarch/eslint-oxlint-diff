@@ -1,8 +1,5 @@
 // Types
-export type EslintFlatConfig = {
-  rules?: Record<string, unknown>;
-  [key: string]: unknown;
-};
+export type EslintFlatConfig = { rules?: Record<string, unknown> };
 export type OxlintConfig = {
   rules?: Record<string, unknown>;
   overrides?: { rules?: Record<string, unknown> }[];
