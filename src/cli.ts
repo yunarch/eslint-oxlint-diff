@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { styleText } from 'node:util';
 import { Command } from 'commander';
-import { diff } from './utils/diff';
+import { parse } from 'jsonc-parser';
+import { diff, type EslintFlatConfig, type OxlintConfig } from './utils/diff';
 import { printDiffResult } from './utils/printer';
 
 // Default candidates
@@ -31,14 +33,52 @@ const OXLINT_CONFIG_FILES = [
 async function findConfigFile(candidates: string[]) {
   const resolved = candidates.map((file) => path.resolve(file));
   const results = await Promise.all(
-    resolved.map((filePath) =>
-      fs.access(filePath).then(
+    resolved.map((filePath) => {
+      return fs.access(filePath).then(
         () => filePath,
-        () => undefined
-      )
-    )
+        () => null
+      );
+    })
   );
-  return results.find((r) => r !== undefined);
+  return results.find((r) => !!r);
+}
+
+/**
+ * Loads an ESLint flat config by dynamically importing the given file path.
+ *
+ * @param p - The file path to the ESLint config to load.
+ * @returns The resolved ESLint flat config objects.
+ */
+async function loadEslintConfig(p?: string): Promise<EslintFlatConfig[]> {
+  const configPath = p ?? (await findConfigFile(ESLINT_CONFIG_FILES));
+  if (!configPath) {
+    throw new Error('Error: No ESLint config file found.');
+  }
+  const resolved = path.resolve(configPath);
+  const mod = (await import(pathToFileURL(resolved).href)) as {
+    default: unknown;
+  };
+  const config = await mod.default;
+  if (Array.isArray(config)) return config as EslintFlatConfig[];
+  if (config && typeof config === 'object') return [config as EslintFlatConfig];
+  throw new Error(
+    `ESLint config at "${configPath}" does not export a valid configuration.`
+  );
+}
+
+/**
+ * Loads an OxLint config from a JSON / JSONC file.
+ *
+ * @param p - The file path to the OxLint config to load.
+ * @returns The resolved OxLint config object.
+ */
+async function loadOxlintConfig(p?: string): Promise<OxlintConfig> {
+  const configPath = p ?? (await findConfigFile(OXLINT_CONFIG_FILES));
+  if (!configPath) {
+    throw new Error('Error: No OxLint config file found.');
+  }
+  const content = await fs.readFile(path.resolve(configPath), 'utf8');
+  return parse(content) as OxlintConfig;
 }
 
 /**
@@ -98,29 +138,12 @@ ${styleText('green', '--oxlint-config')} ${styleText('yellow', 'path/to/.oxlintr
       eslintConfig?: string;
       oxlintConfig?: string;
     }) => {
-      const eslintPath =
-        eslintConfig ?? (await findConfigFile(ESLINT_CONFIG_FILES));
-      const oxlintPath =
-        oxlintConfig ?? (await findConfigFile(OXLINT_CONFIG_FILES));
-      if (!eslintPath) {
-        console.error(
-          styleText(
-            'red',
-            'Error: No ESLint config file found. Provide one with --eslint-config.'
-          )
-        );
-        process.exit(1);
-      }
-      if (!oxlintPath) {
-        console.error(
-          styleText(
-            'red',
-            'Error: No OxLint config file found. Provide one with --oxlint-config.'
-          )
-        );
-        process.exit(1);
-      }
-      const result = await diff({ eslint: eslintPath, oxlint: oxlintPath });
+      const loadedEslintConfig = await loadEslintConfig(eslintConfig);
+      const loadedOxlintConfig = await loadOxlintConfig(oxlintConfig);
+      const result = diff({
+        eslintConfig: loadedEslintConfig,
+        oxlintConfig: loadedOxlintConfig,
+      });
       printDiffResult(result);
     }
   )

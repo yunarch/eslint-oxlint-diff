@@ -1,3 +1,4 @@
+// oxlint-disable no-console -- This module is responsible for printing the diff results to the console, so we need to use console.log here.
 import { styleText } from 'node:util';
 import type { DiffResult } from './diff';
 
@@ -17,7 +18,6 @@ export function printDiffResult(result: DiffResult) {
   console.log(styleText('bold', '  ESLint rules NOT yet covered by OxLint'));
   console.log(styleText('bold', DIVIDER));
   console.log();
-
   const eslintOnlyByCategory = new Map<string, string[]>();
   for (const rule of eslintOnly) {
     const category =
@@ -27,13 +27,11 @@ export function printDiffResult(result: DiffResult) {
     if (!eslintOnlyByCategory.has(category)) {
       eslintOnlyByCategory.set(category, []);
     }
-    eslintOnlyByCategory.get(category)!.push(rule);
+    eslintOnlyByCategory.get(category)?.push(rule);
   }
-
   const sortedCategories = [...eslintOnlyByCategory.entries()].toSorted(
     ([a], [b]) => a.localeCompare(b)
   );
-
   for (const [category, rules] of sortedCategories) {
     console.log(styleText('cyan', `  📦 ${category} (${rules.length})`));
     for (const rule of rules) {
