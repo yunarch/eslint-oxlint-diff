@@ -9,7 +9,4 @@ export default defineConfig({
   clean: true,
   minify: true,
   dts: true,
-  deps: {
-    onlyAllowBundle: ['commander', 'jsonc-parser'],
-  },
 });
