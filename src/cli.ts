@@ -145,6 +145,10 @@ await createBaseProgram()
     'Include nursery rules when inferring the oxlint config. Only relevant without --oxlint-config.',
     false
   )
+  .option(
+    '--save-inferred-oxlint <path>',
+    'Save the inferred OxLint config to a file. Only relevant without --oxlint-config.'
+  )
   .addHelpText(
     'after',
     `
@@ -162,12 +166,14 @@ ${styleText('green', '--oxlint-config')} ${styleText('yellow', 'path/to/.oxlintr
       withInferTypeAware,
       withInferJsPlugins,
       withInferNursery,
+      saveInferredOxlint,
     }: {
       eslintConfig?: string;
       oxlintConfig?: string;
       withInferTypeAware: boolean;
       withInferJsPlugins: boolean;
       withInferNursery: boolean;
+      saveInferredOxlint?: string;
     }) => {
       const loadedEslintConfig = await loadEslintConfig(eslintConfig);
       const loadedOxlintConfig = oxlintConfig
@@ -179,6 +185,15 @@ ${styleText('green', '--oxlint-config')} ${styleText('yellow', 'path/to/.oxlintr
           });
       const result = diff(loadedEslintConfig, loadedOxlintConfig);
       printDiffResult(result);
+      if (saveInferredOxlint && !oxlintConfig) {
+        const resolved = path.resolve(saveInferredOxlint);
+        await fs.mkdir(path.dirname(resolved), { recursive: true });
+        await fs.writeFile(
+          resolved,
+          JSON.stringify(loadedOxlintConfig),
+          'utf8'
+        );
+      }
     }
   )
   .parseAsync(process.argv);
