@@ -120,10 +120,6 @@ await createBaseProgram()
     '--oxlint-config <path>',
     'Path to the oxlint configuration file. Defaults to .oxlintrc file in the current directory.'
   )
-  .option(
-    '--no-dedupe',
-    'Skip turning off ESLint rules that OxLint already covers.'
-  )
   .addHelpText(
     'after',
     `
@@ -138,17 +134,13 @@ ${styleText('green', '--oxlint-config')} ${styleText('yellow', 'path/to/.oxlintr
     async ({
       eslintConfig,
       oxlintConfig,
-      noDedupe,
     }: {
       eslintConfig?: string;
       oxlintConfig?: string;
-      noDedupe?: boolean;
     }) => {
       const loadedEslintConfig = await loadEslintConfig(eslintConfig);
       const loadedOxlintConfig = await loadOxlintConfig(oxlintConfig);
-      const result = diff(loadedEslintConfig, loadedOxlintConfig, {
-        useEslintPluginOxlint: !noDedupe,
-      });
+      const result = diff(loadedEslintConfig, loadedOxlintConfig);
       printDiffResult(result);
     }
   )

@@ -1,5 +1,3 @@
-import oxlint from 'eslint-plugin-oxlint';
-
 // Types
 export type EslintFlatConfig = {
   rules?: Record<string, unknown>;
@@ -107,7 +105,6 @@ function getActiveOxlintRules(config: OxlintConfig): Set<string> {
  *
  * @param eslintConfig - An array of ESLint flat config objects to compare.
  * @param oxlintConfig - An OxLint config object to compare.
- * @param options - Optional settings for the diff operation.
  * @returns A diff object containing the comparison results.
  *
  * @example
@@ -120,19 +117,12 @@ function getActiveOxlintRules(config: OxlintConfig): Set<string> {
  */
 export function diff(
   eslintConfig: EslintFlatConfig[],
-  oxlintConfig: OxlintConfig,
-  options?: { useEslintPluginOxlint?: boolean }
+  oxlintConfig: OxlintConfig
 ): DiffResult {
-  const useEslintPluginOxlint = options?.useEslintPluginOxlint ?? true;
   const eslintOnly: string[] = [];
   const coveredByOxlint: string[] = [];
   const oxlintOnly: string[] = [];
-  const eslintRules = getActiveEslintRules([
-    ...eslintConfig,
-    ...(useEslintPluginOxlint
-      ? (oxlint.buildFromOxlintConfig(oxlintConfig) as EslintFlatConfig[])
-      : []),
-  ]);
+  const eslintRules = getActiveEslintRules(eslintConfig);
   const oxlintRules = getActiveOxlintRules(oxlintConfig);
   for (const rule of eslintRules.keys()) {
     if (oxlintRules.has(rule)) coveredByOxlint.push(rule);

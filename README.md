@@ -17,8 +17,6 @@ Options:
                           eslint.config file in the current directory.
   --oxlint-config <path>  Path to the oxlint configuration file. Defaults to
                           .oxlintrc file in the current directory.
-  --no-dedupe             Skip turning off ESLint rules that OxLint already
-                          covers.
   -h, --help              display help for command
 
 Example usage:
