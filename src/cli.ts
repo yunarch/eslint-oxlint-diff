@@ -47,7 +47,8 @@ async function findConfigFile(candidates: string[]) {
 async function loadEslintConfig(p?: string): Promise<EslintFlatConfig[]> {
   const configPath = p ?? (await findConfigFile(ESLINT_CONFIG_FILES));
   if (!configPath) {
-    throw new Error('Error: No ESLint config file found.');
+    console.error('Error: No ESLint config file found.');
+    process.exit(1);
   }
   const resolved = path.resolve(configPath);
   const mod = (await import(pathToFileURL(resolved).href)) as {
@@ -56,9 +57,10 @@ async function loadEslintConfig(p?: string): Promise<EslintFlatConfig[]> {
   const config = await mod.default;
   if (Array.isArray(config)) return config as EslintFlatConfig[];
   if (config && typeof config === 'object') return [config as EslintFlatConfig];
-  throw new Error(
-    `ESLint config at "${configPath}" does not export a valid configuration.`
+  console.error(
+    `Error: ESLint config at "${configPath}" does not export a valid configuration.`
   );
+  process.exit(1);
 }
 
 /**
