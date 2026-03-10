@@ -67,3 +67,8 @@ export const cliExecutor = createCliExecutor(
   resolve(testDist ? './dist/cli.mjs' : './src/cli.ts')
 );
 export const FIXTURES_DIR = resolve('tests/__fixture__');
+export const FIXTURE_ESLINT_CONFIG = path.join(
+  FIXTURES_DIR,
+  'eslint.config.js'
+);
+export const FIXTURE_OXLINT_CONFIG = path.join(FIXTURES_DIR, 'oxlintrc.json');
