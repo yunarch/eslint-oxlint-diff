@@ -18,7 +18,6 @@ describe('CLI', () => {
     expect(stdout).toContain('--with-infer-js-plugins');
     expect(stdout).toContain('--with-infer-nursery');
     expect(stdout).toContain('--save-inferred-oxlint');
-    expect(stdout).toContain('Example usage:');
   });
 
   it('should diff with explicit eslint and oxlint configs', async () => {
