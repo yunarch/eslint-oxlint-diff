@@ -60,11 +60,11 @@
   "dependencies": {
     "commander": "14.0.3",
     "jsonc-parser": "3.3.1",
-    "@oxlint/migrate": "1.51.0"
+    "@oxlint/migrate": "1.52.0"
   },
   "devDependencies": {
-    "oxfmt": "0.36.0",
-    "oxlint": "1.51.0",
+    "oxfmt": "0.38.0",
+    "oxlint": "1.53.0",
     "oxlint-tsgolint": "0.16.0",
     "husky": "9.1.7",
     "rimraf": "6.1.3",
