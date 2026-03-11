@@ -122,7 +122,7 @@ function createBaseProgram() {
 await createBaseProgram()
   .name('@yunarch/eslint-oxlint-diff')
   .description(
-    'A CLI tool to compare ESLint and OxLint rules, showing coverage gaps and overlap.'
+    'A CLI tool to compare ESLint and OxLint rules, showing coverage gaps and overlap.\n\nRequires ESLint config in flat config format.'
   )
   .option(
     '--eslint-config <path>',
@@ -154,7 +154,11 @@ await createBaseProgram()
   .addHelpText(
     'after',
     `
-Example usage:
+Quick start:
+${styleText('dim', '$')} \
+${styleText('cyan', 'npx @yunarch/eslint-oxlint-diff')}
+
+With explicit config paths:
 ${styleText('dim', '$')} \
 ${styleText('cyan', 'npx @yunarch/eslint-oxlint-diff')} \
 ${styleText('green', '--eslint-config')} ${styleText('yellow', 'path/to/eslint.config')} \
