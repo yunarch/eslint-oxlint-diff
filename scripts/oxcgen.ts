@@ -20,9 +20,14 @@ const OXLINT_OUTPUT_PATH = resolve(ROOT_DIR, '.oxlintrc.json');
  *
  * @param remoteUrl - The URL to fetch the JSONC config from.
  * @param outputPath - The local file path to write the parsed JSON config to.
+ * @param extraConfig - An optional object containing additional configuration properties to merge into the fetched config before writing.
  * @throws Will throw an error if the fetch operation fails or if the response is not OK.
  */
-async function syncRemoteConfig(remoteUrl: string, outputPath: string) {
+async function syncRemoteConfig(
+  remoteUrl: string,
+  outputPath: string,
+  extraConfig?: Record<string, unknown>
+) {
   const response = await fetch(remoteUrl);
   if (!response.ok) {
     throw new Error(
@@ -31,11 +36,17 @@ async function syncRemoteConfig(remoteUrl: string, outputPath: string) {
   }
   const jsonc = await response.text();
   const config = parse(jsonc) as Record<string, unknown>;
-  writeFileSync(outputPath, JSON.stringify(config));
+  writeFileSync(outputPath, JSON.stringify({ ...config, ...extraConfig }));
 }
 
 // Fetch and write both configs in parallel
 await Promise.all([
   syncRemoteConfig(OXFMT_CONFIG_REMOTE_URL, OXFMT_OUTPUT_PATH),
-  syncRemoteConfig(OXLINT_CONFIG_REMOTE_URL, OXLINT_OUTPUT_PATH),
+  syncRemoteConfig(OXLINT_CONFIG_REMOTE_URL, OXLINT_OUTPUT_PATH, {
+    options: {
+      typeAware: true,
+      typeCheck: true,
+      reportUnusedDisableDirectives: 'warn',
+    },
+  }),
 ]);
