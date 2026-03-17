@@ -16,7 +16,7 @@
     "forceConsistentCasingInFileNames": true,
 
     /* Types */
-    "types": ["bun"]
+    "types": ["node", "bun"]
   },
   "exclude": ["node_modules"]
 }
