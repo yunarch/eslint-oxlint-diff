@@ -32,5 +32,11 @@
     ],
     "newlinesBetween": false,
     "order": "asc"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.json", "**/*.jsonc"],
+      "options": { "trailingComma": "none" }
+    }
+  ]
 }
