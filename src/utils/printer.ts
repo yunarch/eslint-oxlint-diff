@@ -1,4 +1,3 @@
-// oxlint-disable no-console -- This module is responsible for printing the diff results to the console, so we need to use console.log here.
 import { styleText } from 'node:util';
 import type { DiffResult } from './diff';
 

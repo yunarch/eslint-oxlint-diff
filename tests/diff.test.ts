@@ -206,13 +206,9 @@ describe('diff', () => {
     it('should handle plugin-prefixed rules', () => {
       const result = diff(
         [{ rules: { '@typescript-eslint/no-unused-vars': 'error' } }],
-        {
-          rules: { '@typescript-eslint/no-unused-vars': 'error' },
-        }
+        { rules: { 'typescript/no-unused-vars': 'error' } }
       );
-      expect(result.coveredByOxlint).toEqual([
-        '@typescript-eslint/no-unused-vars',
-      ]);
+      expect(result.coveredByOxlint).toEqual(['typescript/no-unused-vars']);
       expect(result.eslintOnly).toEqual([]);
       expect(result.oxlintOnly).toEqual([]);
     });
