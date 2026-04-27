@@ -136,14 +136,14 @@ export class CliTable {
    * @param rowIndex - The zero-based index of the parent row (returned by {@link addRow}).
    * @param rows - An array of cell arrays to append as sub-rows.
    */
-  addSubRows(rowIndex: number, rows: string[][]): void {
+  addSubRows(rowIndex: number, rows: string[][]) {
     this.subRows.set(rowIndex, rows);
   }
 
   /**
    * Computes column widths and prints a bordered table to stdout.
    */
-  print(): void {
+  print() {
     const widths = this.columns.map((c) => visibleWidth(c.header));
     for (const row of this.rows) {
       for (let i = 0; i < widths.length; i++) {

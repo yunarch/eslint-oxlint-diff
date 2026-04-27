@@ -183,11 +183,7 @@ export function printDiffResult(
  * @param version - The version string (without "v" prefix).
  * @param desc - A short description line.
  */
-export function printBanner(
-  title: string,
-  version: string,
-  desc: string
-): void {
+export function printBanner(title: string, version: string, desc: string) {
   const spacing = ' '.repeat(BANNER_PAD);
   const innerWidth = Math.max(
     title.length + version.length + BANNER_PAD * 2 + 5,
