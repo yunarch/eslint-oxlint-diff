@@ -112,7 +112,7 @@ function isRuleActive(value: unknown): boolean {
  * Later configs override earlier ones; rules set to "off" / 0 are removed.
  *
  * @param configs - An array of ESLint flat config objects.
- * @returns A map of active ESLint rules keyed by rule name.
+ * @returns A map of active ESLint rules keyed by their canonical OxLint rule name.
  */
 function getActiveEslintRules(
   configs: EslintFlatConfig[]
@@ -142,10 +142,10 @@ function getActiveEslintRules(
 
 /**
  * Extracts active OxLint rules from a config object, including overrides.
- * OxLint rule names are already canonical, so the canonical id equals the rule name.
+ * Later configs override earlier ones; rules set to "off" / 0 are removed.
  *
  * @param config - The OxLint config object.
- * @returns A map of active OxLint rules keyed by rule name.
+ * @returns A map of active OxLint rules keyed by their canonical OxLint rule name.
  */
 function getActiveOxlintRules(config: OxlintConfig): DiffResult['oxlintRules'] {
   const rules: DiffResult['oxlintRules'] = new Map();
