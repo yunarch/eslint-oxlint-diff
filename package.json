@@ -50,7 +50,7 @@
     "format": "oxfmt format --check .",
     "format:all": "oxfmt format --write .",
     "clean": "rimraf dist",
-    "build": "tsdown",
+    "build": "bun run gen && tsdown",
     "tests": "bun test",
     "tests:watch": "bun test --watch",
     "tests:dist": "bun run build && TEST_DIST=true bun test",
