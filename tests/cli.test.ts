@@ -14,6 +14,7 @@ describe('CLI', () => {
     expect(stdout).toContain('Usage: @yunarch/eslint-oxlint-diff');
     expect(stdout).toContain('--eslint-config');
     expect(stdout).toContain('--oxlint-config');
+    expect(stdout).toContain('--verbose');
     expect(stdout).toContain('--with-infer-type-aware');
     expect(stdout).toContain('--with-infer-js-plugins');
     expect(stdout).toContain('--with-infer-nursery');
@@ -27,16 +28,36 @@ describe('CLI', () => {
       '--oxlint-config',
       FIXTURE_OXLINT_CONFIG,
     ]);
-    // ESLint-only rules
-    expect(stdout).toContain('eqeqeq');
-    expect(stdout).toContain('no-console');
-    expect(stdout).toContain('no-var');
-    // OxLint-only rules
-    expect(stdout).toContain('no-empty');
+    // Table headers
+    expect(stdout).toContain('ESLint plugin');
+    expect(stdout).toContain('OxLint plugin');
+    expect(stdout).toContain('Covered rules');
+    expect(stdout).toContain('Coverage');
     // Summary section
     expect(stdout).toContain('Total active ESLint rules:');
     expect(stdout).toContain('Total active OxLint rules:');
     expect(stdout).toContain('Covered by OxLint:');
+    expect(stdout).toContain('40.00%');
+    // Detailed rule listings should NOT appear without --verbose
+    expect(stdout).not.toContain('eqeqeq');
+    expect(stdout).not.toContain('no-console');
+  });
+
+  it('should include detailed rule listings with --verbose', async () => {
+    const { stdout } = await cliExecutor([
+      '--eslint-config',
+      FIXTURE_ESLINT_CONFIG,
+      '--oxlint-config',
+      FIXTURE_OXLINT_CONFIG,
+      '--verbose',
+    ]);
+    // ESLint-only rules shown as sub-rows
+    expect(stdout).toContain('eqeqeq');
+    expect(stdout).toContain('no-console');
+    expect(stdout).toContain('no-var');
+    // OxLint-only rules shown as sub-rows
+    expect(stdout).toContain('no-empty');
+    // Summary still present
     expect(stdout).toContain('40.00%');
   });
 

@@ -4,53 +4,59 @@ export type OxlintConfig = {
   rules?: Record<string, unknown>;
   overrides?: { rules?: Record<string, unknown> }[];
 };
+export type RuleInfo = {
+  /** Original rule name as written in the source config. */
+  rule: string;
+  /** Plugin the rule belongs to (e.g. "@typescript-eslint", "react", "eslint"). */
+  plugin: string;
+  /** Resolved severity. */
+  severity: string;
+  /**
+   * Canonical identifier used to match the same logical rule across ESLint
+   * and OxLint. For OxLint rules this is the rule name itself; for ESLint
+   * rules it is the rule name normalized to OxLint's plugin naming.
+   */
+  canonical: string;
+};
 export type DiffResult = {
-  /** All active ESLint rules mapped to their severity. */
-  eslintRules: Map<string, string>;
-  /** All active OxLint rule names. */
-  oxlintRules: Set<string>;
-  /** Rules active in ESLint but NOT in OxLint. */
-  eslintOnly: string[];
-  /** Rules active in both ESLint and OxLint. */
-  coveredByOxlint: string[];
-  /** Rules active in OxLint but NOT in ESLint. */
-  oxlintOnly: string[];
+  /** All active ESLint rules, keyed by their canonical OxLint rule name. */
+  eslintRules: Map<string, RuleInfo>;
+  /** All active OxLint rules, keyed by their canonical OxLint rule name. */
+  oxlintRules: Map<string, RuleInfo>;
+  /** ESLint rule names active in both ESLint and OxLint, keyed by their canonical OxLint rule name. */
+  coveredByOxlint: Map<string, RuleInfo>;
+  /** ESLint rule names active in ESLint but NOT covered by OxLint, keyed by their canonical OxLint rule name. */
+  eslintOnly: Map<string, RuleInfo>;
+  /** OxLint rule names active in OxLint but NOT in ESLint, keyed by their canonical OxLint rule name. */
+  oxlintOnly: Map<string, RuleInfo>;
 };
 
 /**
- * Checks if a rule value means the rule is active (error or warn).
+ * Extracts the plugin name from a rule name.
+ * For example, "@typescript-eslint/no-unused-vars" -> "@typescript-eslint".
  *
- * @param value - The rule value to check.
- * @returns `true` if the rule is active, `false` otherwise.
+ * @param rule - The rule name.
+ * @returns The plugin name, or "eslint" for unprefixed core rules.
  */
-function isRuleActive(value: unknown): boolean {
-  if (typeof value === 'string') {
-    return value === 'error' || value === 'warn';
-  }
-  if (Array.isArray(value) && value.length > 0) {
-    return (
-      value[0] === 'error' ||
-      value[0] === 'warn' ||
-      value[0] === 2 ||
-      value[0] === 1
-    );
-  }
-  if (typeof value === 'number') {
-    return value === 1 || value === 2;
-  }
-  return false;
+export function getPluginFromRule(rule: string): string {
+  const idx = rule.lastIndexOf('/');
+  return idx > 0 ? rule.slice(0, idx) : 'eslint';
 }
 
 /**
- * Normalizes an ESLint rule name to its OxLint canonical form.
+ * Normalizes an ESLint-style rule name to its canonical OxLint form.
+ * e.g. "@typescript-eslint/no-floating-promises" → "typescript/no-floating-promises"
+ *      "react-hooks/exhaustive-deps" → "react/exhaustive-deps"
+ *      "@next/next/inline-script-id" → "nextjs/inline-script-id"
+ *      "no-unused-vars" → "no-unused-vars" (unchanged for unprefixed rules)
  *
  * @param ruleName - The ESLint rule name to normalize.
  * @returns The normalized OxLint rule name.
  *
  * @see https://github.com/oxc-project/oxlint-migrate/blob/main/src/constants.ts#L30
  */
-function normalizeEslintRuleToOxlintCanonical(ruleName: string): string {
-  const rulesPrefixesForPlugins = {
+export function normalizeEslintRuleToOxlintCanonical(ruleName: string): string {
+  const rulesPrefixesForPlugins: Record<string, string> = {
     import: 'import',
     'import-x': 'import',
     jest: 'jest',
@@ -78,27 +84,56 @@ function normalizeEslintRuleToOxlintCanonical(ruleName: string): string {
 }
 
 /**
- * Extracts the set of active ESLint rules from a flat config array.
+ * Checks if a rule value means the rule is active (error or warn).
+ *
+ * @param value - The rule value to check.
+ * @returns `true` if the rule is active, `false` otherwise.
+ */
+function isRuleActive(value: unknown): boolean {
+  if (typeof value === 'string') {
+    return value === 'error' || value === 'warn';
+  }
+  if (Array.isArray(value) && value.length > 0) {
+    return (
+      value[0] === 'error' ||
+      value[0] === 'warn' ||
+      value[0] === 2 ||
+      value[0] === 1
+    );
+  }
+  if (typeof value === 'number') {
+    return value === 1 || value === 2;
+  }
+  return false;
+}
+
+/**
+ * Extracts active ESLint rules from a flat config array.
  * Later configs override earlier ones; rules set to "off" / 0 are removed.
  *
- * @param configs - An array of ESLint flat config objects to extract rules from.
- * @returns A map of active ESLint rule names to their severity ("error" or "warn").
+ * @param configs - An array of ESLint flat config objects.
+ * @returns A map of active ESLint rules keyed by their canonical OxLint rule name.
  */
 function getActiveEslintRules(
   configs: EslintFlatConfig[]
-): Map<string, string> {
-  const rules = new Map<string, string>();
+): DiffResult['eslintRules'] {
+  const rules: DiffResult['eslintRules'] = new Map();
   for (const cfg of configs) {
     if (!cfg.rules) continue;
     for (const [name, value] of Object.entries(cfg.rules)) {
-      const rule = normalizeEslintRuleToOxlintCanonical(name);
+      const canonical = normalizeEslintRuleToOxlintCanonical(name);
       if (isRuleActive(value)) {
         const severity = Array.isArray(value)
           ? String(value[0])
           : String(value);
-        rules.set(rule, severity);
+        rules.set(canonical, {
+          plugin: getPluginFromRule(name),
+          rule: name,
+          severity,
+          canonical,
+        });
       } else {
-        rules.delete(rule);
+        rules.delete(canonical);
       }
     }
   }
@@ -106,18 +141,29 @@ function getActiveEslintRules(
 }
 
 /**
- * Extracts the set of active OxLint rules from a config object,
- * including any overrides.
+ * Extracts active OxLint rules from a config object, including overrides.
+ * Later configs override earlier ones; rules set to "off" / 0 are removed.
  *
- * @param config - The OxLint config object to extract rules from.
- * @returns A set of active OxLint rule names.
+ * @param config - The OxLint config object.
+ * @returns A map of active OxLint rules keyed by their canonical OxLint rule name.
  */
-function getActiveOxlintRules(config: OxlintConfig): Set<string> {
-  const rules = new Set<string>();
+function getActiveOxlintRules(config: OxlintConfig): DiffResult['oxlintRules'] {
+  const rules: DiffResult['oxlintRules'] = new Map();
   if (config.rules) {
     for (const [name, value] of Object.entries(config.rules)) {
+      const canonical = normalizeEslintRuleToOxlintCanonical(name);
       if (isRuleActive(value)) {
-        rules.add(name);
+        const severity = Array.isArray(value)
+          ? String(value[0])
+          : String(value);
+        rules.set(canonical, {
+          plugin: getPluginFromRule(name),
+          rule: name,
+          severity,
+          canonical,
+        });
+      } else {
+        rules.delete(canonical);
       }
     }
   }
@@ -125,8 +171,19 @@ function getActiveOxlintRules(config: OxlintConfig): Set<string> {
     for (const override of config.overrides) {
       if (!override.rules) continue;
       for (const [name, value] of Object.entries(override.rules)) {
+        const canonical = normalizeEslintRuleToOxlintCanonical(name);
         if (isRuleActive(value)) {
-          rules.add(name);
+          const severity = Array.isArray(value)
+            ? String(value[0])
+            : String(value);
+          rules.set(canonical, {
+            plugin: getPluginFromRule(name),
+            rule: name,
+            severity,
+            canonical,
+          });
+        } else {
+          rules.delete(canonical);
         }
       }
     }
@@ -153,20 +210,23 @@ export function diff(
   eslintConfig: EslintFlatConfig[],
   oxlintConfig: OxlintConfig
 ): DiffResult {
-  const eslintOnly: string[] = [];
-  const coveredByOxlint: string[] = [];
-  const oxlintOnly: string[] = [];
   const eslintRules = getActiveEslintRules(eslintConfig);
   const oxlintRules = getActiveOxlintRules(oxlintConfig);
-  for (const rule of eslintRules.keys()) {
-    if (oxlintRules.has(rule)) coveredByOxlint.push(rule);
-    else eslintOnly.push(rule);
+  const coveredByOxlint: DiffResult['coveredByOxlint'] = new Map();
+  const eslintOnly: DiffResult['eslintOnly'] = new Map();
+  const oxlintOnly: DiffResult['oxlintOnly'] = new Map();
+  const sortedEslint = [...eslintRules.entries()].sort(([a], [b]) =>
+    a.localeCompare(b)
+  );
+  const sortedOxlint = [...oxlintRules.entries()].sort(([a], [b]) =>
+    a.localeCompare(b)
+  );
+  for (const [canonical, rule] of sortedEslint) {
+    if (oxlintRules.has(canonical)) coveredByOxlint.set(canonical, rule);
+    else eslintOnly.set(canonical, rule);
   }
-  for (const rule of oxlintRules) {
-    if (!eslintRules.has(rule)) oxlintOnly.push(rule);
+  for (const [canonical, rule] of sortedOxlint) {
+    if (!eslintRules.has(canonical)) oxlintOnly.set(canonical, rule);
   }
-  eslintOnly.sort();
-  coveredByOxlint.sort();
-  oxlintOnly.sort();
   return { eslintRules, oxlintRules, eslintOnly, coveredByOxlint, oxlintOnly };
 }
