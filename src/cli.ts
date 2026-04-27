@@ -121,10 +121,9 @@ function createBaseProgram() {
 
 // Main program execution
 await createBaseProgram()
-  .name('@yunarch/eslint-oxlint-diff')
-  .description(
-    'A CLI tool to compare ESLint and OxLint rules, showing coverage gaps and overlap.\n\nRequires ESLint config in flat config format.'
-  )
+  .name(name)
+  .description(description)
+  .version(version)
   .option(
     '--eslint-config <path>',
     'Path to the ESLint configuration file. Defaults to eslint.config file in the current directory.'

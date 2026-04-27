@@ -96,7 +96,7 @@ function buildSummaryRows(result: DiffResult): SummaryRow[] {
  */
 export function printDiffResult(
   result: DiffResult,
-  options: { verbose: boolean }
+  options?: { verbose?: boolean }
 ) {
   const { eslintRules, oxlintRules, coveredByOxlint, eslintOnly, oxlintOnly } =
     result;
@@ -123,7 +123,7 @@ export function printDiffResult(
       `${`${unicodeBar} ${String(Math.round((row.covered / row.total) * 100)).padStart(3)}%`}`,
     ]);
     // Add verbose sub-rows
-    if (options.verbose) {
+    if (options?.verbose) {
       const eslintOnlyByPlugin = groupRulesByPlugin(eslintOnly);
       const oxlintOnlyByPlugin = groupRulesByPlugin(oxlintOnly);
       const eslintUncovered = eslintOnlyByPlugin.get(row.eslintPlugin) ?? [];
@@ -189,9 +189,9 @@ export function printBanner(title: string, version: string, desc: string) {
     title.length + version.length + BANNER_PAD * 2 + 5,
     desc.length + BANNER_PAD * 2
   );
-  const titleStyled = styleText('magenta', title);
-  const versionStyled = styleText('yellow', version);
-  const descStyled = styleText('white', desc);
+  const titleStyled = styleText('blue', title);
+  const versionStyled = styleText('green', version);
+  const descStyled = styleText('magenta', desc);
   const nameLine = `${spacing}${titleStyled}${' '.repeat(innerWidth - BANNER_PAD * 2 - title.length - version.length)}${versionStyled}${spacing}`;
   const descLine = `${spacing}${descStyled}${' '.repeat(innerWidth - BANNER_PAD * 2 - desc.length)}${spacing}`;
   console.log();

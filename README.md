@@ -22,12 +22,10 @@ Thinking about adopting [Oxlint](https://oxc.rs/docs/guide/usage/linter.html)? T
 ```
 Usage: @yunarch/eslint-oxlint-diff [options]
 
-A CLI tool to compare ESLint and OxLint rules, showing coverage gaps and
-overlap.
-
-Requires ESLint config in flat config format.
+CLI tool to compare ESLint and OxLint rules, showing coverage gaps and overlap.
 
 Options:
+  -V, --version                  output the version number
   --eslint-config <path>         Path to the ESLint configuration file. Defaults
                                  to eslint.config file in the current directory.
   --oxlint-config <path>         Path to the oxlint configuration file. If
@@ -114,7 +112,7 @@ const result = diff(eslintFlatConfigs, oxlintConfig);
 // result.coveredByOxlint - rules active in both
 // result.oxlintOnly      - rules active in OxLint but not ESLint
 
-printDiffResult(result); // prints formatted output to console
+printDiffResult(result, { verbose: true }); // prints formatted output to console
 ```
 
 ## 📜 License
