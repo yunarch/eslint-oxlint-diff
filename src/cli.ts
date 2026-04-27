@@ -158,6 +158,12 @@ Quick start:
 ${styleText('dim', '$')} \
 ${styleText('cyan', 'npx @yunarch/eslint-oxlint-diff')}
 
+With inferred OxLint config:
+${styleText('dim', '$')} \
+${styleText('cyan', 'npx @yunarch/eslint-oxlint-diff')} \
+${styleText('green', '--with-infer-type-aware')} \
+${styleText('green', '--with-infer-js-plugins')}
+
 With explicit config paths:
 ${styleText('dim', '$')} \
 ${styleText('cyan', 'npx @yunarch/eslint-oxlint-diff')} \

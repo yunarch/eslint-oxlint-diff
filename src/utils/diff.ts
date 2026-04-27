@@ -42,6 +42,42 @@ function isRuleActive(value: unknown): boolean {
 }
 
 /**
+ * Normalizes an ESLint rule name to its OxLint canonical form.
+ *
+ * @param ruleName - The ESLint rule name to normalize.
+ * @returns The normalized OxLint rule name.
+ *
+ * @see https://github.com/oxc-project/oxlint-migrate/blob/main/src/constants.ts#L30
+ */
+function normalizeEslintRuleToOxlintCanonical(ruleName: string): string {
+  const rulesPrefixesForPlugins = {
+    import: 'import',
+    'import-x': 'import',
+    jest: 'jest',
+    jsdoc: 'jsdoc',
+    'jsx-a11y': 'jsx-a11y',
+    '@next/next': 'nextjs',
+    node: 'node',
+    n: 'node',
+    promise: 'promise',
+    react: 'react',
+    'react-perf': 'react-perf',
+    'react-hooks': 'react',
+    'react-refresh': 'react',
+    '@typescript-eslint': 'typescript',
+    unicorn: 'unicorn',
+    vitest: 'vitest',
+    vue: 'vue',
+  };
+  for (const [prefix, plugin] of Object.entries(rulesPrefixesForPlugins)) {
+    if (prefix !== plugin && ruleName.startsWith(`${prefix}/`)) {
+      return `${plugin}/${ruleName.slice(prefix.length + 1)}`;
+    }
+  }
+  return ruleName;
+}
+
+/**
  * Extracts the set of active ESLint rules from a flat config array.
  * Later configs override earlier ones; rules set to "off" / 0 are removed.
  *
@@ -55,13 +91,14 @@ function getActiveEslintRules(
   for (const cfg of configs) {
     if (!cfg.rules) continue;
     for (const [name, value] of Object.entries(cfg.rules)) {
+      const rule = normalizeEslintRuleToOxlintCanonical(name);
       if (isRuleActive(value)) {
         const severity = Array.isArray(value)
           ? String(value[0])
           : String(value);
-        rules.set(name, severity);
+        rules.set(rule, severity);
       } else {
-        rules.delete(name);
+        rules.delete(rule);
       }
     }
   }
