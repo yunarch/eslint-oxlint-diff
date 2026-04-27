@@ -72,6 +72,52 @@ describe('CLI', () => {
     expect(stdout).toContain('100.00%');
   });
 
+  describe('error paths', () => {
+    it('should error when eslint config file does not exist', async () => {
+      const promise = cliExecutor([
+        '--eslint-config',
+        'non-existent-eslint.config.js',
+      ]);
+      expect(promise).rejects.toThrow();
+      try {
+        await promise;
+      } catch (error: unknown) {
+        const err = error as { stderr: string };
+        expect(err.stderr.toLowerCase()).toContain('error');
+      }
+    });
+
+    it('should error when oxlint config file does not exist', async () => {
+      const promise = cliExecutor([
+        '--eslint-config',
+        FIXTURE_ESLINT_CONFIG,
+        '--oxlint-config',
+        'non-existent-oxlintrc.json',
+      ]);
+      expect(promise).rejects.toThrow();
+    });
+
+    it('should error when eslint config exports invalid format', async () => {
+      const invalidConfig = path.join(
+        FIXTURES_DIR,
+        '__invalid_eslint.config.js'
+      );
+      await fs.writeFile(invalidConfig, 'export default "not-a-config";');
+      try {
+        const promise = cliExecutor(['--eslint-config', invalidConfig]);
+        expect(promise).rejects.toThrow();
+        try {
+          await promise;
+        } catch (error: unknown) {
+          const err = error as { stderr: string };
+          expect(err.stderr).toContain('does not export a valid configuration');
+        }
+      } finally {
+        await fs.rm(invalidConfig, { force: true });
+      }
+    });
+  });
+
   describe('--save-inferred-oxlint', () => {
     const SAVE_DIR = path.join(FIXTURES_DIR, '__save_test__');
 

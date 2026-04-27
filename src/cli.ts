@@ -28,15 +28,17 @@ const ESLINT_CONFIG_FILES = [
  */
 async function findConfigFile(candidates: string[]) {
   const resolved = candidates.map((file) => path.resolve(file));
-  const results = await Promise.all(
+  const result = await Promise.any(
     resolved.map((filePath) => {
       return fs.access(filePath).then(
         () => filePath,
-        () => null
+        () => {
+          throw new Error(`Not found: ${filePath}`);
+        }
       );
     })
-  );
-  return results.find((r) => !!r);
+  ).catch(() => undefined);
+  return result;
 }
 
 /**
