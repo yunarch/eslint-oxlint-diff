@@ -100,6 +100,8 @@ export function printDiffResult(
 ) {
   const { eslintRules, oxlintRules, coveredByOxlint, eslintOnly, oxlintOnly } =
     result;
+  const eslintOnlyByPlugin = groupRulesByPlugin(eslintOnly);
+  const oxlintOnlyByPlugin = groupRulesByPlugin(oxlintOnly);
   // ── Print Summary ─────────────────────────────────────────────────
   const rows = buildSummaryRows(result);
   const table = new CliTable({
@@ -124,8 +126,6 @@ export function printDiffResult(
     ]);
     // Add verbose sub-rows
     if (options?.verbose) {
-      const eslintOnlyByPlugin = groupRulesByPlugin(eslintOnly);
-      const oxlintOnlyByPlugin = groupRulesByPlugin(oxlintOnly);
       const eslintUncovered = eslintOnlyByPlugin.get(row.eslintPlugin) ?? [];
       const oxlintExtras = oxlintOnlyByPlugin.get(row.oxlintPlugin) ?? [];
       const maxLen = Math.max(eslintUncovered.length, oxlintExtras.length);
