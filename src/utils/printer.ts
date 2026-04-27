@@ -38,9 +38,9 @@ function groupRulesByPlugin(
 /**
  * Builds per-plugin summary rows comparing ESLint and OxLint rule coverage.
  *
- * Creates a row for each ESLint plugin showing how many of its rules are covered
- * by OxLint, plus any OxLint-only extras. Appends additional rows for OxLint
- * plugins that have no corresponding ESLint plugin.
+ * Creates a row for each ESLint plugin showing how many of its ESLint rules are
+ * covered by OxLint. Appends additional rows for OxLint plugins that have no
+ * corresponding ESLint plugin.
  *
  * @param result - The diff result containing all rule sets and their comparisons.
  * @returns An array of summary rows ordered alphabetically by plugin name.
