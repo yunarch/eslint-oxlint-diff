@@ -33,6 +33,9 @@ Options:
   --oxlint-config <path>         Path to the oxlint configuration file. If
                                  omitted, infers the config from the ESLint
                                  configuration.
+  --verbose                      Print the full per-rule listings of ESLint-only
+                                 and OxLint-only rules in addition to the
+                                 summary. (default: false)
   --with-infer-type-aware        Include type-aware rules when inferring the
                                  oxlint config. Only relevant without
                                  --oxlint-config. (default: true)
@@ -61,28 +64,36 @@ $ npx @yunarch/eslint-oxlint-diff --eslint-config path/to/eslint.config --oxlint
 ### Example output
 
 ```
-──────────────────────────────────────────────────────────────────────
-  ESLint rules NOT yet covered by OxLint
-──────────────────────────────────────────────────────────────────────
+  ┌────────────────────┬───────────────┬───────────────┬──────────────────────────────┐
+  │ ESLint plugin      │ OxLint plugin │ Covered rules │ Coverage                     │
+  ├────────────────────┼───────────────┼───────────────┼──────────────────────────────┤
+  │ @typescript-eslint │ typescript    │         5 / 7 │ ██████████████░░░░░░  71%    │
+  ├────────────────────┼───────────────┼───────────────┼──────────────────────────────┤
+  │ eslint             │ eslint        │         3 / 4 │ ███████████████░░░░░  75%    │
+  └────────────────────┴───────────────┴───────────────┴──────────────────────────────┘
 
-  📦 @typescript-eslint (2 rules)
-     ├─ @typescript-eslint/consistent-type-imports
-     └─ @typescript-eslint/no-import-type-side-effects
+  Total active ESLint rules:    11
+  Total active OxLint rules:     8
+  Covered by OxLint:             8
+  ESLint-only (not in OxLint):   3
+  OxLint-only (not in ESLint):   0
 
-  📦 eslint-core (1 rule)
-     └─ no-console
+  OxLint coverage of ESLint rules: 72.73%
+```
 
-──────────────────────────────────────────────────────────────────────
-  ESLint ↔ OxLint Rule Comparison
-──────────────────────────────────────────────────────────────────────
+With `--verbose`, uncovered ESLint rules and OxLint-only rules are listed inline:
 
-  Total active ESLint rules:            10
-  Total active OxLint rules:             7
-  Covered by OxLint:                     7
-  ESLint-only (not in OxLint):           3
-  OxLint-only (not in ESLint):           0
-
-  OxLint coverage of ESLint rules: 70.00%
+```
+  ┌────────────────────┬───────────────┬───────────────┬──────────────────────────────┐
+  │ ESLint plugin      │ OxLint plugin │ Covered rules │ Coverage                     │
+  ├────────────────────┼───────────────┼───────────────┼──────────────────────────────┤
+  │ @typescript-eslint │ typescript    │         5 / 7 │ ██████████████░░░░░░  71%    │
+  │ ├─ consistent-type │               │               │                              │
+  │ ├─ no-import-type  │               │               │                              │
+  ├────────────────────┼───────────────┼───────────────┼──────────────────────────────┤
+  │ eslint             │ eslint        │         3 / 4 │ ███████████████░░░░░  75%    │
+  │ ├─ no-console      │               │               │                              │
+  └────────────────────┴───────────────┴───────────────┴──────────────────────────────┘
 ```
 
 ### Key concepts
@@ -99,9 +110,9 @@ import { diff, printDiffResult } from '@yunarch/eslint-oxlint-diff';
 
 const result = diff(eslintFlatConfigs, oxlintConfig);
 
-// result.eslintOnly      — rules active in ESLint but not OxLint
-// result.coveredByOxlint — rules active in both
-// result.oxlintOnly      — rules active in OxLint but not ESLint
+// result.eslintOnly      - rules active in ESLint but not OxLint
+// result.coveredByOxlint - rules active in both
+// result.oxlintOnly      - rules active in OxLint but not ESLint
 
 printDiffResult(result); // prints formatted output to console
 ```

@@ -6,8 +6,9 @@ import { styleText } from 'node:util';
 import migrate from '@oxlint/migrate';
 import { Command } from 'commander';
 import { parse } from 'jsonc-parser';
+import { name, version, description } from '../package.json';
 import { diff, type EslintFlatConfig, type OxlintConfig } from './utils/diff';
-import { printDiffResult } from './utils/printer';
+import { printBanner, printDiffResult } from './utils/printer';
 
 // Default candidates
 const ESLINT_CONFIG_FILES = [
@@ -133,6 +134,11 @@ await createBaseProgram()
     'Path to the oxlint configuration file. If omitted, infers the config from the ESLint configuration.'
   )
   .option(
+    '--verbose',
+    'Print the full per-rule listings of ESLint-only and OxLint-only rules in addition to the summary.',
+    false
+  )
+  .option(
     '--with-infer-type-aware',
     'Include type-aware rules when inferring the oxlint config. Only relevant without --oxlint-config.',
     true
@@ -175,6 +181,7 @@ ${styleText('green', '--oxlint-config')} ${styleText('yellow', 'path/to/.oxlintr
     async ({
       eslintConfig,
       oxlintConfig,
+      verbose,
       withInferTypeAware,
       withInferJsPlugins,
       withInferNursery,
@@ -182,11 +189,15 @@ ${styleText('green', '--oxlint-config')} ${styleText('yellow', 'path/to/.oxlintr
     }: {
       eslintConfig?: string;
       oxlintConfig?: string;
+      verbose: boolean;
       withInferTypeAware: boolean;
       withInferJsPlugins: boolean;
       withInferNursery: boolean;
       saveInferredOxlint?: string;
     }) => {
+      // Banner
+      printBanner(name, version, description);
+      // Load configs
       const loadedEslintConfig = await loadEslintConfig(eslintConfig);
       const loadedOxlintConfig = oxlintConfig
         ? await loadOxlintConfig(oxlintConfig)
@@ -195,8 +206,10 @@ ${styleText('green', '--oxlint-config')} ${styleText('yellow', 'path/to/.oxlintr
             jsPlugins: withInferJsPlugins,
             withNursery: withInferNursery,
           });
+      // Diff and print results
       const result = diff(loadedEslintConfig, loadedOxlintConfig);
-      printDiffResult(result);
+      printDiffResult(result, { verbose });
+      // Save inferred OxLint config if requested
       if (saveInferredOxlint && !oxlintConfig) {
         const resolved = path.resolve(saveInferredOxlint);
         await fs.mkdir(path.dirname(resolved), { recursive: true });
