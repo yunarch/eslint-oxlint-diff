@@ -65,8 +65,8 @@ describe('diff', () => {
         { rules: {} }
       );
       expect(result.eslintRules.size).toBe(2);
-      expect(result.eslintRules.get('no-unused-vars')).toBe('error');
-      expect(result.eslintRules.get('semi')).toBe('warn');
+      expect(result.eslintRules.get('no-unused-vars')?.severity).toBe('error');
+      expect(result.eslintRules.get('semi')?.severity).toBe('warn');
     });
 
     it('should handle configs without rules', () => {
@@ -145,25 +145,29 @@ describe('diff', () => {
         [{ rules: { 'no-console': 'error', semi: 'warn' } }],
         { rules: {} }
       );
-      expect(result.eslintOnly).toEqual(['no-console', 'semi']);
-      expect(result.coveredByOxlint).toEqual([]);
-      expect(result.oxlintOnly).toEqual([]);
+      expect(result.eslintOnly.size).toBe(2);
+      expect(result.eslintOnly.has('no-console')).toBe(true);
+      expect(result.eslintOnly.has('semi')).toBe(true);
+      expect(result.coveredByOxlint.size).toBe(0);
+      expect(result.oxlintOnly.size).toBe(0);
     });
 
     it('should categorize oxlint-only rules', () => {
       const result = diff([], { rules: { 'no-console': 'error' } });
-      expect(result.oxlintOnly).toEqual(['no-console']);
-      expect(result.eslintOnly).toEqual([]);
-      expect(result.coveredByOxlint).toEqual([]);
+      expect(result.oxlintOnly.size).toBe(1);
+      expect(result.oxlintOnly.has('no-console')).toBe(true);
+      expect(result.eslintOnly.size).toBe(0);
+      expect(result.coveredByOxlint.size).toBe(0);
     });
 
     it('should categorize covered rules', () => {
       const result = diff([{ rules: { 'no-console': 'error' } }], {
         rules: { 'no-console': 'warn' },
       });
-      expect(result.coveredByOxlint).toEqual(['no-console']);
-      expect(result.eslintOnly).toEqual([]);
-      expect(result.oxlintOnly).toEqual([]);
+      expect(result.coveredByOxlint.size).toBe(1);
+      expect(result.coveredByOxlint.has('no-console')).toBe(true);
+      expect(result.eslintOnly.size).toBe(0);
+      expect(result.oxlintOnly.size).toBe(0);
     });
 
     it('should handle a mix of all categories', () => {
@@ -173,9 +177,13 @@ describe('diff', () => {
           rules: { 'no-console': 'error', 'no-debugger': 'warn' },
         }
       );
-      expect(result.coveredByOxlint).toEqual(['no-console']);
-      expect(result.eslintOnly).toEqual(['no-var', 'semi']);
-      expect(result.oxlintOnly).toEqual(['no-debugger']);
+      expect(result.coveredByOxlint.size).toBe(1);
+      expect(result.coveredByOxlint.has('no-console')).toBe(true);
+      expect(result.eslintOnly.size).toBe(2);
+      expect(result.eslintOnly.has('no-var')).toBe(true);
+      expect(result.eslintOnly.has('semi')).toBe(true);
+      expect(result.oxlintOnly.size).toBe(1);
+      expect(result.oxlintOnly.has('no-debugger')).toBe(true);
     });
 
     it('should sort results alphabetically', () => {
@@ -189,16 +197,16 @@ describe('diff', () => {
           },
         }
       );
-      expect(result.eslintOnly).toEqual(['a-rule', 'm-rule']);
-      expect(result.coveredByOxlint).toEqual(['z-rule']);
-      expect(result.oxlintOnly).toEqual(['a-ox-rule', 'b-ox-rule']);
+      expect([...result.eslintOnly.keys()]).toEqual(['a-rule', 'm-rule']);
+      expect([...result.coveredByOxlint.keys()]).toEqual(['z-rule']);
+      expect([...result.oxlintOnly.keys()]).toEqual(['a-ox-rule', 'b-ox-rule']);
     });
 
-    it('should return empty arrays when both configs are empty', () => {
+    it('should return empty maps when both configs are empty', () => {
       const result = diff([], {});
-      expect(result.eslintOnly).toEqual([]);
-      expect(result.coveredByOxlint).toEqual([]);
-      expect(result.oxlintOnly).toEqual([]);
+      expect(result.eslintOnly.size).toBe(0);
+      expect(result.coveredByOxlint.size).toBe(0);
+      expect(result.oxlintOnly.size).toBe(0);
       expect(result.eslintRules.size).toBe(0);
       expect(result.oxlintRules.size).toBe(0);
     });
@@ -208,9 +216,12 @@ describe('diff', () => {
         [{ rules: { '@typescript-eslint/no-unused-vars': 'error' } }],
         { rules: { 'typescript/no-unused-vars': 'error' } }
       );
-      expect(result.coveredByOxlint).toEqual(['typescript/no-unused-vars']);
-      expect(result.eslintOnly).toEqual([]);
-      expect(result.oxlintOnly).toEqual([]);
+      expect(result.coveredByOxlint.size).toBe(1);
+      expect(result.coveredByOxlint.has('typescript/no-unused-vars')).toBe(
+        true
+      );
+      expect(result.eslintOnly.size).toBe(0);
+      expect(result.oxlintOnly.size).toBe(0);
     });
   });
 });
