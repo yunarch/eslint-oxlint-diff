@@ -31,6 +31,28 @@ export type DiffResult = {
   oxlintOnly: Map<string, RuleInfo>;
 };
 
+// Mapping of ESLint rule name prefixes to OxLint canonical names for normalization purposes.
+// https://github.com/oxc-project/oxlint-migrate/blob/main/src/constants.ts#L3
+const oxlintRulesPrefixesForPlugins: Record<string, string> = {
+  import: 'import',
+  'import-x': 'import',
+  jest: 'jest',
+  jsdoc: 'jsdoc',
+  'jsx-a11y': 'jsx-a11y',
+  '@next/next': 'nextjs',
+  node: 'node',
+  n: 'node',
+  promise: 'promise',
+  react: 'react',
+  'react-perf': 'react-perf',
+  'react-hooks': 'react',
+  'react-refresh': 'react',
+  '@typescript-eslint': 'typescript',
+  unicorn: 'unicorn',
+  vitest: 'vitest',
+  vue: 'vue',
+};
+
 /**
  * Extracts the plugin name from a rule name.
  * For example, "@typescript-eslint/no-unused-vars" -> "@typescript-eslint".
@@ -52,30 +74,11 @@ export function getPluginFromRule(rule: string): string {
  *
  * @param ruleName - The ESLint rule name to normalize.
  * @returns The normalized OxLint rule name.
- *
- * @see https://github.com/oxc-project/oxlint-migrate/blob/main/src/constants.ts#L30
  */
 export function normalizeEslintRuleToOxlintCanonical(ruleName: string): string {
-  const rulesPrefixesForPlugins: Record<string, string> = {
-    import: 'import',
-    'import-x': 'import',
-    jest: 'jest',
-    jsdoc: 'jsdoc',
-    'jsx-a11y': 'jsx-a11y',
-    '@next/next': 'nextjs',
-    node: 'node',
-    n: 'node',
-    promise: 'promise',
-    react: 'react',
-    'react-perf': 'react-perf',
-    'react-hooks': 'react',
-    'react-refresh': 'react',
-    '@typescript-eslint': 'typescript',
-    unicorn: 'unicorn',
-    vitest: 'vitest',
-    vue: 'vue',
-  };
-  for (const [prefix, plugin] of Object.entries(rulesPrefixesForPlugins)) {
+  for (const [prefix, plugin] of Object.entries(
+    oxlintRulesPrefixesForPlugins
+  )) {
     if (prefix !== plugin && ruleName.startsWith(`${prefix}/`)) {
       return `${plugin}/${ruleName.slice(prefix.length + 1)}`;
     }

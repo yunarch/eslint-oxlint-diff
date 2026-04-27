@@ -19,9 +19,10 @@ type SummaryRow = {
 };
 
 /**
- * Prints a per-plugin grouped listing of rules.
+ * Groups rules by their plugin name.
  *
- * @param rules - The rules to print.
+ * @param rules - A map of rules keyed by canonical name.
+ * @returns A map of plugin names to their associated rules.
  */
 function groupRulesByPlugin(
   rules: Map<string, RuleInfo>
@@ -42,22 +43,26 @@ function groupRulesByPlugin(
  * covered by OxLint. Appends additional rows for OxLint plugins that have no
  * corresponding ESLint plugin.
  *
- * @param result - The diff result containing all rule sets and their comparisons.
+ * @param groupedRules - Pre-computed plugin groupings for ESLint rules, OxLint rules, and covered rules.
  * @returns An array of summary rows ordered alphabetically by plugin name.
  */
-function buildSummaryRows(result: DiffResult): SummaryRow[] {
+function buildSummaryRows(groupedRules: {
+  eslintRules: Map<string, RuleInfo[]>;
+  oxlintRules: Map<string, RuleInfo[]>;
+  coveredByOxlint: Map<string, RuleInfo[]>;
+}): SummaryRow[] {
   const rows: SummaryRow[] = [];
-  const eslintPluginsSorted = [
-    ...groupRulesByPlugin(result.eslintRules),
-  ].toSorted(([a], [b]) => a.localeCompare(b));
-  const coveredRulesByPlugin = groupRulesByPlugin(result.coveredByOxlint);
   const pluginsWithExtrasAccounted = new Set<string>();
   // First, create rows for all ESLint plugins
+  const eslintPluginsSorted = [...groupedRules.eslintRules].toSorted(
+    ([a], [b]) => a.localeCompare(b)
+  );
   for (const [eslintPlugin, eslintRules] of eslintPluginsSorted) {
     const oxlintPlugin = getPluginFromRule(
       normalizeEslintRuleToOxlintCanonical(eslintRules[0].canonical)
     );
-    const coveredCount = coveredRulesByPlugin.get(eslintPlugin)?.length ?? 0;
+    const coveredCount =
+      groupedRules.coveredByOxlint.get(eslintPlugin)?.length ?? 0;
     const totalCount = eslintRules.length;
     if (!pluginsWithExtrasAccounted.has(oxlintPlugin)) {
       pluginsWithExtrasAccounted.add(oxlintPlugin);
@@ -71,9 +76,9 @@ function buildSummaryRows(result: DiffResult): SummaryRow[] {
     });
   }
   // Second, add rows for OxLint plugins that have no corresponding ESLint plugin
-  const oxlintPluginsSorted = [
-    ...groupRulesByPlugin(result.oxlintRules),
-  ].toSorted(([a], [b]) => a.localeCompare(b));
+  const oxlintPluginsSorted = [...groupedRules.oxlintRules].toSorted(
+    ([a], [b]) => a.localeCompare(b)
+  );
   for (const [oxlintPlugin, oxlintRules] of oxlintPluginsSorted) {
     if (!pluginsWithExtrasAccounted.has(oxlintPlugin)) {
       rows.push({
@@ -100,10 +105,15 @@ export function printDiffResult(
 ) {
   const { eslintRules, oxlintRules, coveredByOxlint, eslintOnly, oxlintOnly } =
     result;
-  const eslintOnlyByPlugin = groupRulesByPlugin(eslintOnly);
-  const oxlintOnlyByPlugin = groupRulesByPlugin(oxlintOnly);
+  const groupedRules = {
+    eslintRules: groupRulesByPlugin(eslintRules),
+    oxlintRules: groupRulesByPlugin(oxlintRules),
+    coveredByOxlint: groupRulesByPlugin(coveredByOxlint),
+    eslintOnlyByPlugin: groupRulesByPlugin(eslintOnly),
+    oxlintOnlyByPlugin: groupRulesByPlugin(oxlintOnly),
+  };
   // ── Print Summary ─────────────────────────────────────────────────
-  const rows = buildSummaryRows(result);
+  const rows = buildSummaryRows(groupedRules);
   const table = new CliTable({
     columns: [
       { header: 'ESLint plugin' },
@@ -113,7 +123,8 @@ export function printDiffResult(
     ],
   });
   for (const row of rows) {
-    const unicodeBarFilled = Math.round((row.covered / row.total) * BAR_WIDTH);
+    const ratio = row.total > 0 ? row.covered / row.total : 0;
+    const unicodeBarFilled = Math.round(ratio * BAR_WIDTH);
     const unicodeBar =
       row.total > 0
         ? `${styleText(row.isOxlintOnly ? 'blue' : 'green', '█'.repeat(unicodeBarFilled))}${'░'.repeat(BAR_WIDTH - unicodeBarFilled)}`
@@ -122,12 +133,14 @@ export function printDiffResult(
       row.eslintPlugin,
       row.oxlintPlugin,
       row.isOxlintOnly ? `${row.covered}` : `${row.covered} / ${row.total}`,
-      `${`${unicodeBar} ${String(Math.round((row.covered / row.total) * 100)).padStart(3)}%`}`,
+      `${`${unicodeBar} ${String(Math.round(ratio * 100)).padStart(3)}%`}`,
     ]);
     // Add verbose sub-rows
     if (options?.verbose) {
-      const eslintUncovered = eslintOnlyByPlugin.get(row.eslintPlugin) ?? [];
-      const oxlintExtras = oxlintOnlyByPlugin.get(row.oxlintPlugin) ?? [];
+      const eslintUncovered =
+        groupedRules.eslintOnlyByPlugin.get(row.eslintPlugin) ?? [];
+      const oxlintExtras =
+        groupedRules.oxlintOnlyByPlugin.get(row.oxlintPlugin) ?? [];
       const maxLen = Math.max(eslintUncovered.length, oxlintExtras.length);
       if (maxLen > 0) {
         const subRows: string[][] = [];

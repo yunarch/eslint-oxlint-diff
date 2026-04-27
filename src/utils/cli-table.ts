@@ -23,6 +23,9 @@ type TableOptions = {
   cellPadding?: number;
 };
 
+// oxlint-disable-next-line no-control-regex -- We need to match ANSI escape codes for stripping them when calculating visible widths.
+const ANSI_ESCAPE_REGEX = /\x1B\[[0-9;]*m/g;
+
 /**
  * Returns the visible (printable) width of a string, ignoring ANSI escape codes.
  *
@@ -30,8 +33,7 @@ type TableOptions = {
  * @returns The visible character count.
  */
 function visibleWidth(str: string): number {
-  // oxlint-disable-next-line no-control-regex -- We need to match ANSI escape codes for stripping them when calculating visible widths.
-  return str.replace(/\x1B\[[0-9;]*m/g, '').length;
+  return str.replace(ANSI_ESCAPE_REGEX, '').length;
 }
 
 /**
