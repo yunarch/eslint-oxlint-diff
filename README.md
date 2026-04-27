@@ -49,6 +49,9 @@ Options:
 Quick start:
 $ npx @yunarch/eslint-oxlint-diff
 
+With inferred OxLint config:
+$ npx @yunarch/eslint-oxlint-diff --with-infer-type-aware --with-infer-js-plugins
+
 With explicit config paths:
 $ npx @yunarch/eslint-oxlint-diff --eslint-config path/to/eslint.config --oxlint-config path/to/.oxlintrc
 ```
