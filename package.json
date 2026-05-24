@@ -62,7 +62,7 @@
     "@oxlint/migrate": "1.65.0"
   },
   "devDependencies": {
-    "oxfmt": "0.50.0",
+    "oxfmt": "0.51.0",
     "oxlint": "1.65.0",
     "oxlint-tsgolint": "0.22.1",
     "husky": "9.1.7",
