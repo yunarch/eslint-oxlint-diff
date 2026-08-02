@@ -67,7 +67,7 @@
     "oxlint-tsgolint": "7.0.2001",
     "husky": "9.1.7",
     "rimraf": "6.1.3",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "tsdown": "0.22.14",
     "@types/node": "26.1.2",
     "@types/bun": "1.3.14"
