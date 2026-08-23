@@ -5,7 +5,7 @@
     "": {
       "name": "@yunarch/eslint-oxlint-diff",
       "dependencies": {
-        "@oxlint/migrate": "1.76.0",
+        "@oxlint/migrate": "1.78.0",
         "commander": "15.0.0",
         "jsonc-parser": "3.3.1",
       },
@@ -161,7 +161,7 @@
 
     "@oxlint/binding-win32-x64-msvc": ["@oxlint/binding-win32-x64-msvc@1.76.0", "", { "os": "win32", "cpu": "x64" }, "sha512-5qcirPHO8nKfkoowEVWtpAoVTcYDy6g0UT0NGic450Qv8J2NrOqg4uQ8QppRP4MDTC7Xx47lbZnmadTH03CGGA=="],
 
-    "@oxlint/migrate": ["@oxlint/migrate@1.76.0", "", { "dependencies": { "commander": "^15.0.0", "globals": "^17.0.0", "oxc-parser": "^0.139.0", "tinyglobby": "^0.2.14" }, "bin": { "@oxlint/migrate": "./dist/bin/oxlint-migrate.mjs" } }, "sha512-bjfMdLaQv/OKgLn07QQV2fDa15COU8RzW0Cr8tVoCplu7PdOkpUJsFDzaPJa84/AU8qOtZIDfind2Mk9ZZlcCA=="],
+    "@oxlint/migrate": ["@oxlint/migrate@1.78.0", "", { "dependencies": { "commander": "^15.0.0", "globals": "^17.0.0", "oxc-parser": "^0.139.0", "tinyglobby": "^0.2.14" }, "bin": { "@oxlint/migrate": "./dist/bin/oxlint-migrate.mjs" } }, "sha512-Ro1+RM4t9rILZtTGkosOwCXEV+Ua/J4RxAaPvsunrDq3OlcaQb7VYN9lRbQLmnDFpNRJK8gIIN89Sv8ffbI3nw=="],
 
     "@quansync/fs": ["@quansync/fs@1.0.0", "", { "dependencies": { "quansync": "^1.0.0" } }, "sha512-4TJ3DFtlf1L5LDMaM6CanJ/0lckGNtJcMjQ1NAV6zDmA0tEHKZtxNKin8EgPaVX1YzljbxckyT2tJrpQKAtngQ=="],
 
