@@ -59,7 +59,7 @@
   "dependencies": {
     "commander": "15.0.0",
     "jsonc-parser": "3.3.1",
-    "@oxlint/migrate": "1.76.0"
+    "@oxlint/migrate": "1.79.0"
   },
   "devDependencies": {
     "oxfmt": "0.64.0",
