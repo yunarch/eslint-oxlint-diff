@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "oxfmt": "0.66.0",
-    "oxlint": "1.81.0",
+    "oxlint": "1.82.0",
     "oxlint-tsgolint": "7.0.2001",
     "husky": "9.1.7",
     "rimraf": "6.1.3",
