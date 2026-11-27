@@ -1,6 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: bun
+  - package-ecosystem: 'bun'
     directory: '/'
     versioning-strategy: increase
     cooldown:
@@ -8,6 +8,28 @@ updates:
     schedule:
       interval: weekly
       day: sunday
+      time: '12:00'
+      timezone: 'Europe/Madrid'
+    groups:
+      types:
+        patterns:
+          - '@types/*'
+      tools:
+        patterns:
+          - 'oxfmt'
+          - 'oxlint'
+          - 'oxlint-tsgolint'
+          - '@oxlint/migrate'
+          - 'husky'
+          - 'rimraf'
+          - 'typescript'
+      build-tools:
+        patterns:
+          - 'tsdown'
+      runtime:
+        patterns:
+          - 'commander'
+          - 'jsonc-parser'
   - package-ecosystem: 'github-actions'
     directory: '/'
     cooldown:
@@ -15,3 +37,5 @@ updates:
     schedule:
       interval: weekly
       day: sunday
+      time: '12:00'
+      timezone: 'Europe/Madrid'
